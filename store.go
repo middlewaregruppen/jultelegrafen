@@ -2,10 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var randomContent []string = []string{
@@ -42,33 +45,77 @@ func RandomRim(rim []string) string {
 	return rim[index]
 }
 
+type EntryID string
+
 type Store struct {
-	entries    []Entry
+	entries    map[EntryID]*Entry
 	mu         sync.Mutex
 	lastPop    time.Time
 	lastEntry  *Entry
 	popMaxWait time.Duration
+	filePath   string
+}
+
+type Entry struct {
+	ID        string `json:"id,omitempty"`
+	Author    string `json:"author,omitempty"`
+	Content   string `json:"content,omitempty"`
+	Created   string `json:"created,omitempty"`
+	IPAddr    string `json:"ip_addr,omitempty"`
+	UserAgent string `json:"user_agent,omitempty"`
+}
+
+type StoreOpt func(*Store)
+
+// WithFilePath provides the full path to the store file
+func WithFilePath(filePath string) StoreOpt {
+	return func(s *Store) {
+		s.filePath = filePath
+	}
+}
+
+// WithPopMaxWait sets the rate of popped messages
+func WithPopMaxWait(d time.Duration) StoreOpt {
+	return func(s *Store) {
+		s.popMaxWait = d
+	}
 }
 
 // NewStore returns a new store
-func NewStore(d time.Duration) (*Store, error) {
-	f, err := os.OpenFile(DBPATH, os.O_CREATE|os.O_RDWR, 0o644)
+func NewStore(opts ...StoreOpt) (*Store, error) {
+	store := &Store{
+		filePath:   "messages.json",
+		popMaxWait: 0,
+		entries:    map[EntryID]*Entry{},
+	}
+
+	// Apply options
+	for _, opt := range opts {
+		opt(store)
+	}
+
+	f, err := os.OpenFile(store.filePath, os.O_CREATE|os.O_RDWR, 0o644)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	return &Store{lastPop: time.Now(), popMaxWait: d}, err
+	return store, nil
+}
+
+// Queue lists all entries in the queue
+func (s *Store) Queue() (map[EntryID]*Entry, error) {
+	return s.entries, nil
 }
 
 // List lists all entries in the store
-func (s *Store) List() ([]*Entry, error) {
-	b, err := os.ReadFile(DBPATH)
+func (s *Store) List() (map[EntryID]*Entry, error) {
+	b, err := os.ReadFile(s.filePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*Entry
+	var result map[EntryID]*Entry
 	err = json.Unmarshal(b, &result)
 	if err != nil {
 		return nil, err
@@ -78,33 +125,58 @@ func (s *Store) List() ([]*Entry, error) {
 }
 
 // Save adds an entry to the store
-func (s *Store) Save(e *Entry) error {
+func (s *Store) Save(e *Entry) (*Entry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// Set metadata before commiting to store
+	e.Created = time.Now().String()
+	e.ID = uuid.New().String()
+
 	entries, err := s.List()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	entries = append(entries, e)
+	entries[EntryID(e.ID)] = e
+	s.entries[EntryID(e.ID)] = e
 
 	b, err := json.Marshal(&entries)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	tmp, err := os.CreateTemp(".", "messages-")
+	tmp, err := os.CreateTemp(".", fmt.Sprintf("%s-", s.filePath))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = tmp.Write(b)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return os.Rename(tmp.Name(), DBPATH)
+	err = os.Rename(tmp.Name(), s.filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.Get(e.ID)
+}
+
+// Get returns one entry with matching id
+func (s *Store) Get(id string) (*Entry, error) {
+	entries, err := s.List()
+	if err != nil {
+		return nil, err
+	}
+
+	entry, ok := entries[EntryID(id)]
+	if !ok {
+		return nil, os.ErrNotExist
+	}
+
+	return entry, nil
 }
 
 // Pop returns the first element from the entries slice. The
@@ -115,49 +187,26 @@ func (s *Store) Pop() (*Entry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	defaultEntry := &Entry{Author: "Tomten", Content: RandomRim(randomContent), Created: time.Now(), IPAddr: "1270.0.0"}
-	since := time.Since(s.lastPop)
+	defaultEntry := &Entry{Author: "Tomten", Content: RandomRim(randomContent), Created: time.Now().String(), IPAddr: "1270.0.0"}
 
 	// Don't pop a new message if not enough time has passed
-	if since < s.popMaxWait {
-		if s.lastEntry == nil {
-			s.lastEntry = defaultEntry
-		}
+	since := time.Since(s.lastPop)
+	if since < s.popMaxWait && s.lastEntry != nil {
 		return s.lastEntry, nil
 	}
 
-	entries, err := s.List()
-	if err != nil {
-		return nil, err
-	}
-
-	// If no messages in store, then return a default entry until someone submits one
-	if len(entries) == 0 {
+	// If no messages in queue, then return a default entry until someone submits one
+	if len(s.entries) == 0 {
 		return defaultEntry, nil
 	}
 
-	popped := entries[0]
-	entries = entries[1:]
-
-	b, err := json.Marshal(&entries)
-	if err != nil {
-		return nil, err
+	keys := make([]EntryID, 0, len(s.entries))
+	for k := range s.entries {
+		keys = append(keys, k)
 	}
-
-	tmp, err := os.CreateTemp(".", "messages-")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = tmp.Write(b)
-	if err != nil {
-		return nil, err
-	}
-
-	err = os.Rename(tmp.Name(), DBPATH)
-	if err != nil {
-		return nil, err
-	}
+	poppedKey := keys[0]
+	popped := s.entries[poppedKey]
+	delete(s.entries, poppedKey)
 
 	s.lastPop = time.Now()
 	s.lastEntry = popped

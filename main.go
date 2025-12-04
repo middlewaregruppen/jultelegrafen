@@ -17,21 +17,17 @@ import (
 var popMaxWait time.Duration
 
 func init() {
-	pflag.DurationVarP(&popMaxWait, "pop-max-wait", "p", time.Minute*2, "How long clients must wait until a new message is returnes when popping")
-}
-
-type Entry struct {
-	Author  string    `json:"author,omitempty"`
-	Content string    `json:"content,omitempty"`
-	Created time.Time `json:"created,omitempty"`
-	IPAddr  string    `json:"ip_addr,omitempty"`
+	pflag.DurationVarP(&popMaxWait, "pop-max-wait", "p", time.Minute*2, "How long clients must wait until a new message is returnes when popping. Value 0 means pop is instantaneous")
 }
 
 type APIResult struct {
 	Entries []Entry `json:"entries"`
 }
 
-const DBPATH string = "messages.json"
+const (
+	DBPATH    string = "messages.json"
+	QUEUEPATH string = "queue.json"
+)
 
 //go:embed static/*
 var staticFS embed.FS
@@ -41,9 +37,15 @@ func main() {
 
 	pflag.Parse()
 
-	store, err := NewStore(popMaxWait)
+	store, err := NewStore(
+		WithFilePath(DBPATH),
+		WithPopMaxWait(popMaxWait),
+	)
 	if err != nil {
 		log.Fatalf("error opening store: %v", err)
+	}
+	if err != nil {
+		log.Fatalf("error opening queue: %v", err)
 	}
 
 	// Serve the SPA index for root and any front‑end route
@@ -61,7 +63,7 @@ func main() {
 		http.FileServer(http.FS(staticFS)).ServeHTTP(w, r)
 	})
 
-	mux.HandleFunc("/api/message", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/queue", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		switch r.Method {
@@ -78,7 +80,7 @@ func main() {
 		}
 	})
 
-	mux.HandleFunc("/api/message/pop", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/queue/pop", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			if err := handlePop(store, r, w); err != nil {
@@ -117,7 +119,7 @@ func handlePop(store *Store, _ *http.Request, w http.ResponseWriter) error {
 
 // Handles get requests
 func handleGet(store *Store, _ *http.Request, w http.ResponseWriter) error {
-	entries, err := store.List()
+	entries, err := store.Queue()
 	if err != nil {
 		http.Error(w, "error listing entries", http.StatusInternalServerError)
 		return err
@@ -160,23 +162,16 @@ func handlePost(store *Store, r *http.Request, w http.ResponseWriter) error {
 		return nil
 	}
 
-	// Set metadata before commiting to store
-	req.Created = time.Now()
 	req.IPAddr = r.RemoteAddr
+	req.UserAgent = r.UserAgent()
 
-	err := store.Save(&req)
+	e, err := store.Save(&req)
 	if err != nil {
 		http.Error(w, "error saving to store", http.StatusInternalServerError)
 		return err
 	}
 
-	entries, err := store.List()
-	if err != nil {
-		http.Error(w, "error listing entries", http.StatusInternalServerError)
-		return err
-	}
-
-	b, err := json.Marshal(&entries)
+	b, err := json.Marshal(e)
 	if err != nil {
 		http.Error(w, "error marshalling entries", http.StatusInternalServerError)
 		return err
