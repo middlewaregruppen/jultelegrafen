@@ -941,7 +941,7 @@ color: #360508;
             const data = await res.json()
 
             this.displayMessage = data.message || '(no message field)'
-            this.statusText = 'Tack för ditt meddelande! <br/> Din julhälsning kommer visas på tomtems skärm'
+            this.statusText = this.tomteSvordom() + ' Vilket fint meddelande! <br/> Din julhälsning kommer visas på tomtens skärm'
             this.isOnline = true
             this.clientState = 'synced'
             this.messageContent = ''
