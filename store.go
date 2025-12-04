@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"os"
 	"sync"
@@ -44,19 +43,22 @@ func RandomRim(rim []string) string {
 }
 
 type Store struct {
-	entries []Entry
-	mu      sync.Mutex
+	entries    []Entry
+	mu         sync.Mutex
+	lastPop    time.Time
+	lastEntry  *Entry
+	popMaxWait time.Duration
 }
 
 // NewStore returns a new store
-func NewStore() (*Store, error) {
+func NewStore(d time.Duration) (*Store, error) {
 	f, err := os.OpenFile(DBPATH, os.O_CREATE|os.O_RDWR, 0o644)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	return &Store{}, err
+	return &Store{lastPop: time.Now(), popMaxWait: d}, err
 }
 
 // List lists all entries in the store
@@ -106,23 +108,32 @@ func (s *Store) Save(e *Entry) error {
 }
 
 // Pop returns the first element from the entries slice. The
-// popped element is then removed from the store.
+// popped element is then removed from the store. Pop has an internal backoff mechanism.
+// To prevent too many concurrent pops. Only the last entry will be return within a given
+// period of time.
 func (s *Store) Pop() (*Entry, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	defaultEntry := &Entry{Author: "Tomten", Content: RandomRim(randomContent), Created: time.Now(), IPAddr: "1270.0.0"}
+	since := time.Since(s.lastPop)
+
+	// Don't pop a new message if not enough time has passed
+	if since < s.popMaxWait {
+		if s.lastEntry == nil {
+			s.lastEntry = defaultEntry
+		}
+		return s.lastEntry, nil
+	}
 
 	entries, err := s.List()
 	if err != nil {
 		return nil, err
 	}
 
+	// If no messages in store, then return a default entry until someone submits one
 	if len(entries) == 0 {
-		entries = append(entries, &Entry{Author: "Tomten", Content: RandomRim(randomContent), Created: time.Now(), IPAddr: "1270.0.0"})
-	}
-
-	// Don't try do pop an entry from an empty list
-	if len(entries) < 1 {
-		return nil, fmt.Errorf("can't pop entry from empty list")
+		return defaultEntry, nil
 	}
 
 	popped := entries[0]
@@ -148,5 +159,7 @@ func (s *Store) Pop() (*Entry, error) {
 		return nil, err
 	}
 
+	s.lastPop = time.Now()
+	s.lastEntry = popped
 	return popped, nil
 }

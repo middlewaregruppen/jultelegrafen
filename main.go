@@ -9,7 +9,16 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/spf13/pflag"
 )
+
+// How long clients must wait until a new message is returned when popping
+var popMaxWait time.Duration
+
+func init() {
+	pflag.DurationVarP(&popMaxWait, "pop-max-wait", "p", time.Minute*2, "How long clients must wait until a new message is returnes when popping")
+}
 
 type Entry struct {
 	Author  string    `json:"author,omitempty"`
@@ -30,7 +39,9 @@ var staticFS embed.FS
 func main() {
 	mux := http.NewServeMux()
 
-	store, err := NewStore()
+	pflag.Parse()
+
+	store, err := NewStore(popMaxWait)
 	if err != nil {
 		log.Fatalf("error opening store: %v", err)
 	}
