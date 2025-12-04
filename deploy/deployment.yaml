@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app
+  name: app
+  namespace: jultelegrafen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: app
+    spec:
+      containers:
+        - image: ghcr.io/middlewaregruppen/jultelegrafen:latest
+          imagePullPolicy: Always
+          name: jultelegrafen
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources: {}

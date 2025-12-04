@@ -23,6 +23,7 @@ FROM scratch
 
 # Copy the statically linked binary from builder
 COPY --from=builder /jultelegrafen /jultelegrafen
+COPY --from=builder /app/messages.json /messages.json
 
 # Container listens on same port as main.go
 EXPOSE 8080
