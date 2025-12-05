@@ -94,11 +94,31 @@ func NewStore(opts ...StoreOpt) (*Store, error) {
 		opt(store)
 	}
 
-	f, err := os.OpenFile(store.filePath, os.O_CREATE|os.O_RDWR, 0o644)
+	_, err := os.Stat(store.filePath)
 	if err != nil {
-		return nil, err
+		// Create empty file store if none exists
+		if os.IsNotExist(err) {
+
+			f, err := os.Create(store.filePath)
+			if err != nil {
+				return nil, err
+			}
+
+			entries := make(map[EntryID]*Entry)
+			b, err := json.Marshal(&entries)
+			if err != nil {
+				return nil, err
+			}
+
+			_, err = f.Write(b)
+			if err != nil {
+				return nil, err
+			}
+
+		} else {
+			return nil, err
+		}
 	}
-	defer f.Close()
 
 	return store, nil
 }

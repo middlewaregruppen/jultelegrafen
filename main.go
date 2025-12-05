@@ -150,15 +150,19 @@ func handlePost(store *Store, r *http.Request, w http.ResponseWriter) error {
 
 	// Validation
 	if strings.TrimSpace(req.Content) == "" {
-		http.Error(w, "message is required", http.StatusBadRequest)
+		http.Error(w, "En julhälsning utan meddelande är som risgrynsgröt utan kanel", http.StatusBadRequest)
 		return nil
 	}
 	if strings.TrimSpace(req.Author) == "" {
-		http.Error(w, "author is required", http.StatusBadRequest)
+		http.Error(w, "Jag vill gärna veta vad du heter", http.StatusBadRequest)
 		return nil
 	}
 	if len(req.Content) > 100 {
-		http.Error(w, "message is too long. max len is 100", http.StatusBadRequest)
+		http.Error(w, "Det var lite mer än vad jag klarar av. Va snäll å korta ner meddelandet lite", http.StatusBadRequest)
+		return nil
+	}
+	if len(req.Author) > 22 {
+		http.Error(w, "Jag fixar inte namn som är längre än 22 tecken. Fråga mig inte varför", http.StatusBadRequest)
 		return nil
 	}
 

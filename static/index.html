@@ -1,16 +1,107 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
   <head>
-    <meta charset="UTF-8" />
-    <title>Interactive Christmas Postcard</title>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1">
+    <title>God Jul Önskar Middlewaregruppen</title>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="icon" href="/static/favicon.ico">
     <style>
       ::selection {
         background: rgba(255,255,0,0.5);
       }
 
+
+      .error {
+        font-family: var(--bs-font-monospace);
+
+      }
+
+      :root {
+        /* Page-level colors (your own use) */
+        --page-bg: #E2E7EA;          
+        --page-surface: #f8e7dc;
+        --page-text: #360508;  
+        --accent-gold: #E7A374;
+        --accent-ice: #a0d5d3;
+        /* Bootstrap body */
+        --bs-body-bg: var(--page-bg);
+        --bs-body-color: var(--page-text);
+        /* Bootstrap theme colors */
+        --bs-primary: #F14E63;
+        --bs-primary-rgb: 222, 47, 50;
+        --bs-secondary: #0b3b2e;
+        --bs-secondary-rgb: 11, 59, 46;
+        --bs-warning: var(--accent-gold);
+        --bs-warning-rgb: 247, 190, 16;
+        --bs-info: var(--accent-ice);
+        --bs-info-rgb: 160, 213, 211;
+        /* Links */
+        --bs-link-color: #f7be10;
+        --bs-link-hover-color: #ffe066;
+
+        --input-bg-color: #f1f3f5;
+        --page-border-color: var(--accent-gold);
+      }
+
+      .form-check-input{
+        border-color: var(--bs-btn-active-border-color);
+      }
+      .form-check-input:checked {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-btn-active-border-color);
+      }
+
+      /* Primary = Santa red */
+      .btn-primary {
+        --bs-btn-bg: var(--bs-primary);
+        --bs-btn-border-color: var(--bs-primary);
+        --bs-btn-hover-bg: #ff3a3f;
+        --bs-btn-hover-border-color: #ff3a3f;
+        --bs-btn-active-bg: #b02125;
+        --bs-btn-active-border-color: #b02125;
+        --bs-btn-disabled-bg: var(--bs-primary);
+        --bs-btn-disabled-border-color: var(--bs-primary);
+      }
+      /* Secondary = pine green (light) or frosty teal (dark) via vars above */
+      .btn-secondary {
+        --bs-btn-bg: var(--bs-secondary);
+        --bs-btn-border-color: var(--bs-secondary);
+        --bs-btn-hover-bg: #0f5040;
+        --bs-btn-hover-border-color: #0f5040;
+        --bs-btn-active-bg: #072b21;
+        --bs-btn-active-border-color: #072b21;
+        --bs-btn-disabled-bg: var(--bs-secondary);
+        --bs-btn-disabled-border-color: var(--bs-secondary);
+      }
+
+      /* Use variables instead of hardcoded colors */
       body {
-        background: #de2f32; 
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background-color: var(--page-bg);
+        color: var(--page-text);
+      }
+
+      /* When in dark mode */
+      [data-bs-theme="dark"] {
+        /* Bootstrap body colors */
+        /* --bs-secondary: #66704b; */
+        /* --bs-primary: #555E3F; */
+        --bs-body-bg: #121212;
+        --bs-body-color: #f8f9fa;
+        /* Your own page colors */
+        --page-bg: #121212;
+        --page-text: #fbd8da;
+        --page-border-color: var(--accent-gold);
+        --input-bg-color-active: #1f1f1f;
+        --input-bg-color: #171717;
+      }
+
+      h1, h3 {
+        font-family: 'Mountains of Christmas';
+        font-style: normal;
+        src: local("Mountains of Christmas"), local("MountainsofChristmas-Regular"), url(https://fonts.gstatic.com/s/mountainsofchristmas/v8/dVGBFPwd6G44IWDbQtPewylJhLDHyIrT3I5b5eGTHmw.woff2) format("woff2");
       }
 
       .footer {
@@ -29,7 +120,7 @@
       .copyright {
         font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         size: 10px;
-        color: #053633; 
+        /* color: #053633; */
       }
 
       .status {
@@ -44,37 +135,22 @@
 
       }
 
-      .form input, textarea {
-        font-family: "Comic Sans MS", "Comic Sans", cursive;
+      .form-control {
+        font-family: "Comic Sans MS", "Comic Sans";
         font-size: 18px;
         border-radius: 8px;
-        border: 2px solid #360508;
+        border: 2px solid var(--page-border-color);
         padding: 12px;
-        color: #9F0E17;
+        text-color: var(--page-text);
         margin-bottom: 12px;
+        background-color: var(--input-bg-color);
       }
 
-      .form button {
-        margin-top: 16px;
-        padding: 12px;
-        font-family: "Comic Sans MS", "Comic Sans", cursive;
-        border-radius: 8px;
-        border: 2px solid #360508;
-        background-color: #F3BB8A;
-      }
-
-
-      .form button:hover {
-        background-color: #EF9D87;
-      }
-      .form button:active {
-        background-color: #ff9800;
-      }
-
-      .form button:disabled {
-        opacity: 0.6;
-        cursor: default;
-        transform: none;
+      .form-control:focus {
+        outline: none;
+        border-color: #ff9800;
+        box-shadow: 0 0 0 2px #ff9800;
+        background-color: var(--input-bg-color);
       }
 
       a {
@@ -99,18 +175,13 @@
         width: 340px;
         height: 340px;
         background: #a0d5d3;
-        position: absolute;
-        top: 30%;
-        left: 50%;
+        position: relative;
         border-radius: 50%;
-        margin-top: -60px;
-        -webkit-transform: translate(-50%, -50%);
-        -moz-transform: translate(-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        -o-transform: translate(-50%, -50%);
-        transform: translate(-50%, -50%);
+        margin: 0 auto 1rem;
         border: 10px solid #f8e7dc;
-        overflow: hidden; }
+        overflow: hidden;
+        transform-origin: top center;
+      }
 
       .santa {
         position: absolute;
@@ -851,73 +922,126 @@
 
         100% {
           width: 20px; } }
+
+
+      .app {
+        height: 100%;
+      }
     </style>
   </head>
   <body>
-    <div class="content" class="app" x-data="spaApp()" x-init="init()">
-      <div class="window">
-        <div class="santa">
-          <div class="head">
-            <div class="face">
-              <div class="redhat">
-                <div class="whitepart"></div>
-                <div class="redpart"></div>
-                <div class="hatball"></div>
+    <div class="container">
+      <main class="main my-4" class="app" x-data="spaApp()" x-init="init()">
+
+        <div class="text-center">
+
+          <div class="row">
+
+            <!-- Left padding on large screens -->
+            <div class="col-lg-4">
+            </div>
+
+            <div class="col container-fluid santa-col">
+
+              <!-- Santa -->
+              <div class="santa-wrapper">
+                <div class="santa-wrapper-inner">
+                  <div class="window">
+                    <div class="santa">
+                      <div class="head">
+                        <div class="face">
+                          <div class="redhat">
+                            <div class="whitepart"></div>
+                            <div class="redpart"></div>
+                            <div class="hatball"></div>
+                          </div>
+                          <div class="eyes"></div>
+                          <div class="beard">
+                            <div class="nouse"></div>
+                            <div class="mouth"></div>
+                          </div>
+                        </div>
+                        <div class="ears"></div>
+                      </div>
+                      <div class="body"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="eyes"></div>
-              <div class="beard">
-                <div class="nouse"></div>
-                <div class="mouth"></div>
+
+              <!-- Form -->
+              <div class="row">
+                <h1 class="fs-1">God Jul!</h1>
+                <h3 class="fs-4">Önskar Svenska Middlewaregruppen AB</h3>
+                <div class="form">
+
+                  <div class="alert alert-danger" x-html="errorText" role="alert" x-show="errorText.trim()"></div>
+                  <div class="alert alert-success" x-html="statusText" role="alert" x-show="statusText.trim()"></div>
+
+                  <div class="mb-3">
+                    <input
+                      class="form-control form-control-lg"
+                      id="author"
+                      type="text"
+                      placeholder="Ditt namn eller företag"
+                      x-model="messageAuthor"
+                    />
+                  </div>
+
+                  <div class="mb-3">
+                    <textarea id="content" placeholder="Skriv din julhälsning här" class="form-control form-control-lg" rows="3" x-model="messageContent"></textarea>
+                  </div>
+
+                  <button 
+                    id="submit" 
+                    type="button" 
+                    class="btn btn-primary btn-lg" 
+                    @click="postMessage"
+                    :disabled="isLoading || !messageContent.trim() || !messageAuthor.trim()"
+                  >
+                    <span x-show="!isLoading">Skicka</span>
+                    <span x-show="isLoading">Skickar...</span>
+                  </button>
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                  <div class="copyright">
+                    <p>
+                      <small>Skapad med 💛 av oss som jobbar på Middlewaregruppen. <br/>Källkod och Licens finns på <a href="https://github.com/middlewaregruppen/jultelegrafen" target="_blank">GitHub</a> 
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+                          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+                        </svg>
+                      </small>
+                    </p>
+                    <small class="copyright">CSS-tomten skapad av <a href="https://twitter.com/alireza29675" target="_blank">Alireza Sheikholmolouki</a></small>
+                  </div>
+                  <div class="d-flex justify-content-center m-3">
+                    <div class="form-check form-switch">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="darkModeSwitch"
+                        x-model="darkMode"
+                        @change="applyTheme"
+                      >
+                      <label class="form-check-label" for="darkModeSwitch">
+                        Mörkt läge
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              <!-- End form -->
               </div>
             </div>
-            <div class="ears"></div>
-          </div>
-          <div class="body"></div>
-        </div>
-      </div>
-      <div class="message">
-        <h1>God Jul!</h1>
-        <h3>Önskar Svenska Middlewaregruppen AB</h3>
-        <div class="form">
 
-          <div class="status" x-html="errorText" x-show="errorText.trim()"></div>
-          <div class="status" x-html="statusText" x-show="statusText.trim()"></div>
+            <!-- Right padding on large screens -->
+            <div class="col-lg-4">
+            </div>
 
-          <label for="author" class="label">Från</label>
-          <input
-            id="author"
-            type="text"
-            placeholder="Ditt namn eller företag"
-            x-model="messageAuthor"
-          />
-
-          <label for="content" class="label">Julhälsning</label>
-          <textarea id="content" x-model="messageContent"></textarea>
-
-          <button
-            id="submit"
-            type="button"
-            class="primary"
-            @click="postMessage"
-            :disabled="isLoading || !messageContent.trim() || !messageAuthor.trim()"
-          >
-            <span x-show="!isLoading">Skicka</span>
-            <span x-show="isLoading">Skickar...</span>
-          </button>
-        </div>
-        <div class="footer">
-          <div class="copyright">
-          <p>
-            <small>Skapad med 💛 av oss som jobbar på Middlewaregruppen. <br/>Källkod och Licens finns på <a href="https://github.com/middlewaregruppen/jultelegrafen" target="_blank">GitHub</a> 
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
-                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
-              </svg>
-            </small>
-          </p>
-          <small class="copyright">CSS-tomten skapad av <a href="https://twitter.com/alireza29675" target="_blank">Alireza Sheikholmolouki</a></small>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   </body>
   <script>
@@ -932,9 +1056,19 @@
         isLoading: false,
         isOnline: false,
         clientState: 'idle',
+        darkMode: false, // NEW
         init() {
+          // Set theme based on saved preference before doing anything else
+          const saved = localStorage.getItem('theme');
+          this.darkMode = saved === 'dark';
+          this.applyTheme();
           // Initial fetch from backend when SPA loads
           this.fetchMessage()
+        },
+        applyTheme() {
+          const theme = this.darkMode ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-bs-theme', theme);
+          localStorage.setItem('theme', theme);
         },
         tomteSvordom() {
           const uttryck = [
@@ -956,6 +1090,7 @@
 
           this.isLoading = true
           this.clientState = 'syncing'
+          this.statusText = '';
           try {
             const res = await fetch('/api/queue', {
               method: 'POST',
@@ -964,7 +1099,10 @@
                 author: this.messageAuthor,
               })
             })
-            if (!res.ok) throw new Error('HTTP ' + res.status)
+            if (!res.ok) {
+              const errorBody = await res.text()
+              throw new Error(errorBody || ('HTTP ' + res.status))
+            } 
             const data = await res.json()
 
             this.displayMessage = data.message || '(no message field)'
@@ -975,10 +1113,9 @@
             this.messageAuthor = ''
           } catch (err) {
             this.displayMessage = 'Could not reach backend'
-            this.statusText = 'Error: ' + err.message
             this.isOnline = false
             this.clientState = 'error'
-            this.errorText = this.tomteSvordom() + " Något gick snett: <br/>" + err.message 
+            this.errorText = this.tomteSvordom() + " Något gick snett: <br/><span class=\"error\">" + (err.message || 'Okänt fel') + "</span>"
           } finally {
             this.isLoading = false
           }
@@ -995,7 +1132,7 @@
             this.isOnline = true
             this.clientState = 'synced'
           } catch (err) {
-            this.errorText = this.tomteSvordom() + " Något gick snett: <br/>" + err.message 
+            this.errorText = this.tomteSvordom() + " Något gick snett: <br/><span class=\"error\">" + err.message + "</span>"
             this.displayMessage = 'Could not reach backend'
             this.isOnline = false
             this.clientState = 'error'
@@ -1005,5 +1142,27 @@
         },
       }
     }
+
+    // Scale Santa window to fill its Bootstrap column while keeping proportions
+    function resizeSantaWindow() {
+      var col = document.querySelector('.santa-col');
+      if (!col) return;
+      var santaWindow = col.querySelector('.window');
+      if (!santaWindow) return;
+      var originalSize = 340; // original design size in px
+      var available = col.clientWidth;
+      if (!available) return;
+
+      var scale = available / originalSize;
+      santaWindow.style.transform = 'scale(' + scale + ')';
+
+      // Push content below Santa down so it isn't hidden by the scaled circle
+      var baseMargin = 16; // ~1rem
+      var extra = Math.max(0, originalSize * (scale - 1));
+      santaWindow.style.marginBottom = (baseMargin + extra) + 'px';
+    }
+
+    window.addEventListener('resize', resizeSantaWindow);
+    window.addEventListener('DOMContentLoaded', resizeSantaWindow);
   </script>
 </html>
