@@ -15,3 +15,22 @@ spec:
     app: app
   sessionAffinity: None
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: stream-proxy
+  name: stream-proxy
+  namespace: jultelegrafen
+spec:
+  externalName: stream-proxy-2.middleware.se
+  selector:
+    app: stream-proxy
+  sessionAffinity: None
+  type: ExternalName
+  ports:
+    - name: 443-443
+      port: 443
+      protocol: TCP
+      targetPort: 80
