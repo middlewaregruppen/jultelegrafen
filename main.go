@@ -88,7 +88,9 @@ func main() {
 			}
 		}
 	})
+
 	addr := ":8080"
+
 	log.Printf("listening on %s", addr)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatal(err)
