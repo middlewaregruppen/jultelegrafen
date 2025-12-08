@@ -1023,24 +1023,13 @@
               <!-- Santa -->
               <div class="santa-wrapper">
                 <div class="santa-wrapper-inner">
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-                  <div class="window">
-                    <div class="santa">
-=======
-
-                   <div class="window" :class="videoExpanded ? 'window-expanded' : ''">
-
-=======
 
                   <div class="window">
->>>>>>> main
 
                     <div
                       class="santa-video"
                       x-show="!showSantaMessages && showFeed"
                     >
-<<<<<<< HEAD
                        <template x-if="loading">
                          <div class="santa-video-loader">
                            <div class="spinner-border text-light" role="status">
@@ -1063,26 +1052,6 @@
                          />
                        </template>
 
-
-=======
-                      <template x-if="loading">
-                        <div class="spinner-border text-light" role="status">
-                          <span class="visually-hidden">Laddar video...</span>
-                        </div>
-                      </template>
-                      <template x-if="error">
-                        <div class="text-light small text-center px-2" x-text="error"></div>
-                      </template>
-                      <template x-if="url && !error">
-                        <img
-                          x-bind:src="url"
-                          alt="Julkamera"
-                          class="santa-video-feed"
-                          @load="onStreamLoad"
-                          @error="onStreamError"
-                        />
-                      </template>
->>>>>>> main
                     </div>
 
                     <!-- <div -->
@@ -1112,10 +1081,6 @@
                       x-show="!showSantaMessages || !showFeed"
                       @click="enableCamera()"
                     >
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> main
                       <div class="head">
                         <div class="face">
                           <div class="redhat">
@@ -1216,12 +1181,13 @@
     function spaApp() {
       return { 
         // Camera state
-        streamURL: "http://192.168.11.19:1984/api/stream.mjpeg?src=rtmp_stream_low",
+        streamURL: "http://stream-proxy.middleware.se/api/stream.mjpeg?src=rtmp_stream_low",
         url: "",
         error: null,
         loading: false,
         showFeed: false,
         feedLoaded: false,
+        videoExpanded: false,
         async load() {
           this.error = null;
           this.loading = true;
@@ -1246,6 +1212,7 @@
           this.showFeed = false;
           this.feedLoaded = false;
           this.loading = false;
+          this.videoExpanded = false;
         },
         // Reactive state
         displayMessage: 'Loading...',
