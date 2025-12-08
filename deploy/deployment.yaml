@@ -21,6 +21,10 @@ spec:
       labels:
         app: app
     spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
       containers:
         - image: ghcr.io/middlewaregruppen/jultelegrafen:latest
           imagePullPolicy: Always
@@ -28,4 +32,8 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - name: data
+              mountPath: /app
+              subPath: messages.json
           resources: {}

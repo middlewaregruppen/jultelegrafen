@@ -18,8 +18,10 @@ COPY . .
 # Build a static binary
 RUN go build -o /jultelegrafen ./...
 
-# ---- Minimal runtime stage (scratch) ------------------------------------
-FROM scratch
+# ---- Minimal runtime stage with ffmpeg ----------------------------------
+FROM alpine:3.19
+
+RUN apk add --no-cache ca-certificates
 
 # Copy the statically linked binary from builder
 COPY --from=builder /jultelegrafen /jultelegrafen
