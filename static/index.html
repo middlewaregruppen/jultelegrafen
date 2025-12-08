@@ -181,6 +181,26 @@
         border: 10px solid #f8e7dc;
         overflow: hidden;
         transform-origin: top center;
+        transition: border-radius 0.4s ease, width 0.4s ease, height 0.4s ease, transform 0.4s ease;
+      }
+
+      .window-expanded {
+        width: 100%;
+        max-width: 640px;
+        aspect-ratio: 16 / 9;
+        height: auto;
+        border-radius: 24px;
+        transform: none !important;
+      }
+
+
+      .window-expanded {
+        width: 100%;
+        max-width: 640px;
+        aspect-ratio: 16 / 9;
+        height: auto;
+        border-radius: 24px;
+        transform: none !important;
       }
 
       .santa {
@@ -946,8 +966,71 @@
               <!-- Santa -->
               <div class="santa-wrapper">
                 <div class="santa-wrapper-inner">
+<<<<<<< Updated upstream
                   <div class="window">
                     <div class="santa">
+=======
+
+                   <div class="window" :class="videoExpanded ? 'window-expanded' : ''">
+
+
+                    <div
+                      class="santa-video"
+                      x-show="!showSantaMessages && showFeed"
+                    >
+                       <template x-if="loading">
+                         <div class="santa-video-loader">
+                           <div class="spinner-border text-light" role="status">
+                             <span class="visually-hidden">Laddar video...</span>
+                           </div>
+                         </div>
+                       </template>
+
+                      <template x-if="error">
+                        <div class="text-light small text-center px-2" x-text="error"></div>
+                      </template>
+                       <template x-if="url && !error">
+                         <img
+                           x-bind:src="url"
+                           alt="Julkamera"
+                           class="santa-video-feed"
+                           @load="onStreamLoad"
+                           @error="onStreamError"
+                           @click="videoExpanded = !videoExpanded"
+                         />
+                       </template>
+
+
+                    </div>
+
+                    <!-- <div -->
+                    <!--   class="santa-messages" -->
+                    <!--   x-show="showSantaMessages" -->
+                    <!--   x-transition.opacity -->
+                    <!-- > -->
+                    <!--   <div class="santa-message-viewport"> -->
+                    <!--     <div -->
+                    <!--       class="santa-message-stack" -->
+                    <!--       :style="'transform: translateY(-' + (santaTickerIndex * 100) + '%)'" -->
+                    <!--     > -->
+                    <!--       <template x-if="!santaMessages.length"> -->
+                    <!--         <div class="santa-message-line"> -->
+                    <!--           Inga julhälsningar ännu -->
+                    <!--         </div> -->
+                    <!--       </template> -->
+                    <!--       <template x-for="(msg, index) in santaMessages" :key="msg.id || index"> -->
+                    <!--         <div class="santa-message-line" x-text="formatSantaMessage(msg)"></div> -->
+                    <!--       </template> -->
+                    <!--     </div> -->
+                    <!--   </div> -->
+                    <!-- </div> -->
+
+                    <div
+                      class="santa"
+                      x-show="!showSantaMessages || !showFeed"
+                      @click="enableCamera()"
+                    >
+>>>>>>> Stashed changes
                       <div class="head">
                         <div class="face">
                           <div class="redhat">
@@ -1046,7 +1129,47 @@
   </body>
   <script>
     function spaApp() {
+<<<<<<< Updated upstream
       return {
+=======
+      return { 
+         // Camera state
+         // streamURL: "http://192.168.11.19:1984/api/stream.mjpeg?src=rtmp_stream_low",
+         streamURL: "https://stream-proxy.middleware.se/api/stream.mjpeg?src=rtmp_stream_low",
+         url: "",
+         error: null,
+         loading: false,
+         showFeed: false,
+         videoExpanded: false,
+
+        async load() {
+          this.error = null;
+          this.loading = true;
+          this.showFeed = true;
+          this.url = this.streamURL;
+        },
+        onStreamLoad() {
+          this.loading = false;
+          this.feedLoaded = true;
+        },
+        onStreamError(event) {
+          this.loading = false;
+          this.feedLoaded = false;
+          this.error = 'Strömmen kunde inte laddas.';
+          console.error('Stream image error', event);
+        },
+        enableCamera() {
+          this.load();
+        },
+         disableCamera() {
+           this.url = "";
+           this.showFeed = false;
+           this.loading = false;
+           this.videoExpanded = false;
+         },
+
+
+>>>>>>> Stashed changes
         // Reactive state
         displayMessage: 'Loading...',
         messageAuthor: '',
@@ -1147,8 +1270,10 @@
     function resizeSantaWindow() {
       var col = document.querySelector('.santa-col');
       if (!col) return;
-      var santaWindow = col.querySelector('.window');
-      if (!santaWindow) return;
+       var santaWindow = col.querySelector('.window');
+       if (!santaWindow) return;
+       if (santaWindow.classList.contains('window-expanded')) return;
+
       var originalSize = 340; // original design size in px
       var available = col.clientWidth;
       if (!available) return;
