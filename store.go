@@ -171,7 +171,7 @@ func (s *Store) Save(e *Entry) (*Entry, error) {
 		return nil, err
 	}
 
-	base := filepath.Dir(s.fileName)
+	base := filepath.Dir(s.filePath)
 	tmp, err := os.CreateTemp(base, fmt.Sprintf("%s-", s.fileName))
 	if err != nil {
 		return nil, err
