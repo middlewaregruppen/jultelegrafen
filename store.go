@@ -54,6 +54,7 @@ type Store struct {
 	lastEntry  *Entry
 	popMaxWait time.Duration
 	filePath   string
+	fileName   string
 }
 
 type Entry struct {
@@ -94,7 +95,7 @@ func NewStore(opts ...StoreOpt) (*Store, error) {
 		opt(store)
 	}
 
-	_, err := os.Stat(store.filePath)
+	fstat, err := os.Stat(store.filePath)
 	if err != nil {
 		// Create empty file store if none exists
 		if os.IsNotExist(err) {
@@ -119,6 +120,8 @@ func NewStore(opts ...StoreOpt) (*Store, error) {
 			return nil, err
 		}
 	}
+
+	store.fileName = fstat.Name()
 
 	return store, nil
 }
@@ -166,7 +169,7 @@ func (s *Store) Save(e *Entry) (*Entry, error) {
 		return nil, err
 	}
 
-	tmp, err := os.CreateTemp(".", fmt.Sprintf("%s-", s.filePath))
+	tmp, err := os.CreateTemp(".", fmt.Sprintf("%s-", s.fileName))
 	if err != nil {
 		return nil, err
 	}

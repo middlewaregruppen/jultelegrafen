@@ -14,20 +14,19 @@ import (
 )
 
 // How long clients must wait until a new message is returned when popping
-var popMaxWait time.Duration
+var (
+	popMaxWait time.Duration
+	dbPath     string
+)
 
 func init() {
 	pflag.DurationVarP(&popMaxWait, "pop-max-wait", "p", time.Minute*2, "How long clients must wait until a new message is returnes when popping. Value 0 means pop is instantaneous")
+	pflag.StringVarP(&dbPath, "db-path", "d", ".", "Path to database file (messages.json)")
 }
 
 type APIResult struct {
 	Entries []Entry `json:"entries"`
 }
-
-const (
-	DBPATH    string = "messages.json"
-	QUEUEPATH string = "queue.json"
-)
 
 //go:embed static/*
 var staticFS embed.FS
@@ -38,7 +37,7 @@ func main() {
 	pflag.Parse()
 
 	store, err := NewStore(
-		WithFilePath(DBPATH),
+		WithFilePath(dbPath),
 		WithPopMaxWait(popMaxWait),
 	)
 	if err != nil {
