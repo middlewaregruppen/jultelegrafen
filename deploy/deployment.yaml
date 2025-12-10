@@ -21,11 +21,21 @@ spec:
       labels:
         app: app
     spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data
       containers:
-        - image: ghcr.io/middlewaregruppen/jultelegrafen:latest
+        - image: ghcr.io/middlewaregruppen/jultelegrafen:v0.0.10
           imagePullPolicy: Always
           name: jultelegrafen
+          args:
+            - "--db-path=/data/messages.json"
+            - "--pop-max-wait=2m"
           ports:
             - containerPort: 8080
               protocol: TCP
           resources: {}
+          volumeMounts:
+            - mountPath: /data
+              name: data

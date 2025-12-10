@@ -18,8 +18,9 @@ COPY . .
 # Build a static binary
 RUN go build -o /jultelegrafen ./...
 
-# ---- Minimal runtime stage (scratch) ------------------------------------
-FROM scratch
+FROM alpine:3.23.0
+
+RUN apk add --no-cache ca-certificates
 
 # Copy the statically linked binary from builder
 COPY --from=builder /jultelegrafen /jultelegrafen
