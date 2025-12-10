@@ -21,7 +21,7 @@ var (
 
 func init() {
 	pflag.DurationVarP(&popMaxWait, "pop-max-wait", "p", time.Minute*2, "How long clients must wait until a new message is returnes when popping. Value 0 means pop is instantaneous")
-	pflag.StringVarP(&dbPath, "db-path", "d", ".", "Path to database file (messages.json)")
+	pflag.StringVarP(&dbPath, "db-path", "d", "./messages.json", "Path to database file (messages.json)")
 }
 
 type APIResult struct {

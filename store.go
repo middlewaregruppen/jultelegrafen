@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -95,8 +96,7 @@ func NewStore(opts ...StoreOpt) (*Store, error) {
 		opt(store)
 	}
 
-	var fname string
-	fstat, err := os.Stat(store.filePath)
+	_, err := os.Stat(store.filePath)
 	if err != nil {
 		// Create empty file store if none exists
 		if os.IsNotExist(err) {
@@ -106,8 +106,6 @@ func NewStore(opts ...StoreOpt) (*Store, error) {
 				return nil, err
 			}
 			defer f.Close()
-
-			fname = f.Name()
 
 			entries := make(map[EntryID]*Entry)
 			b, err := json.Marshal(&entries)
@@ -125,11 +123,7 @@ func NewStore(opts ...StoreOpt) (*Store, error) {
 		}
 	}
 
-	if fstat != nil {
-		fname = fstat.Name()
-	}
-
-	store.fileName = fname
+	store.fileName = filepath.Base(store.filePath)
 
 	return store, nil
 }
